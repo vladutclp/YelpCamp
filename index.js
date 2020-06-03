@@ -14,6 +14,7 @@ let campgrounds = [
   {name: "Fisher Creek", img: "https://images.unsplash.com/photo-1590886252448-363529dba743?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=634&q=80"}
 
 ];
+
 app.use(bodyParser.urlencoded({extended: true}));
 app.set("view engine", "ejs");
 
