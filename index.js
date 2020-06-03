@@ -1,6 +1,22 @@
 const express = require("express");
 const app = express();
 const bodyParser = require("body-parser");
+const mongoose = require("mongoose");
+
+mongoose.connect("mongodb://localhost/yelp_camp", {useNewUrlParser: true, useUnifiedTopology: true}); //Create database
+app.use(bodyParser.urlencoded({extended: true}));
+app.set("view engine", "ejs");
+
+//Schema setup
+const campgroundsSchema = new mongoose.Schema({
+  name: String,
+  image: String
+});
+
+ const Campground = mongoose.model("Campground", campgroundsSchema);
+
+
+
 let campgrounds = [
   {name: "Salmon Creek", img: "https://images.unsplash.com/photo-1510312305653-8ed496efae75?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=967&q=80"},
   {name: "Cheese Creek", img: "https://images.unsplash.com/photo-1559310589-2673bfe16970?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=1350&q=80"},
@@ -15,25 +31,44 @@ let campgrounds = [
 
 ];
 
-app.use(bodyParser.urlencoded({extended: true}));
-app.set("view engine", "ejs");
+
 
 app.get("/", function(req, res){
   res.render("landing");
 });
 
 app.get("/campgrounds", function(req, res){
-  res.render("campgrounds", {campgrounds: campgrounds});
+  //Get all campgrounds from DB
+  Campground.find({}, (err, allCampgrounds) => {
+    if(err){
+      console.log(err);
+    }
+    else{
+      res.render("campgrounds", {campgrounds: allCampgrounds});
+    }
+  });
+  
 });
 
 app.post("/campgrounds", function(req, res){
+  //Get data from the form in the params object
   let params = req.body;
-  campgrounds.push(params);
-  res.redirect("/campgrounds");
-  console.log(campgrounds);
-  //get data from form
-  //add to campground array
-  //redirect to show page(campground)
+  console.log(params);
+  //Create a new campground with the data from the form
+  Campground.create(
+    {
+      name: params.name, 
+      image: params.image
+    }, (err, campground) => {
+      if(err){
+        console.log(err);
+      }
+      else{
+        //If the campground is created, redirect to #show page
+        console.log(`Newly created campground:\n${campground}`);
+        res.redirect("/campgrounds");
+      }
+    });
 });
 
 app.get("/campgrounds/new", function(req, res){
